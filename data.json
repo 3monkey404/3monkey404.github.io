@@ -1,0 +1,144 @@
+{
+    "page": {
+        "home": [
+            {
+                "name": "div",
+
+                "attr": [
+                    {"name": "id", "value": "render-anchor"}
+                ],
+
+                "element": {
+                    "texte": "",
+                    "html": []
+                }
+            },
+
+            {
+                "name": "world-3d",
+
+                "attr": [
+                    {"name": "bg-color", "value": "grey"},
+                    {"name": "cam-pos", "value": "0 0.5 10"}
+                ],
+
+                "element": {
+
+                    "texte": "",
+                    "html": [
+                        {
+                            "name": "custom-3d-light",
+
+                            "attr": [
+                                {"name": "pos", "value": "-5 1 1"},
+                                {"name": "intensity", "value": 1}
+                            ],
+
+                            "element": {
+                                "texte": "",
+                                "html": []
+                            }
+                        },
+    
+                        {
+                            "name": "custom-3d-texte",
+
+                            "attr": [
+                                {"name": "height", "value": 1},
+                                {"name": "sca",   "value": "0.2 0.2 0.2"},
+                                {"name": "pos",   "value": "-6 0 -15"},
+                                {"name": "texte", "value": "jeux\nvideal"},
+                                {"name": "color", "value": "red"}
+                            ],
+
+                            "element": {
+                                "texte": "",
+                                "html": []
+                            }
+                        },
+
+                        {
+                            "name": "custom-3d-texte",
+
+                            "attr": [
+                                {"name": "height", "value": 1},
+                                {"name": "sca",   "value": "0.2 0.2 0.2"},
+                                {"name": "pos",   "value": "2 0 -50"},
+                                {"name": "texte", "value": "by Denis"},
+                                {"name": "color", "value": "red"}
+                            ],
+
+                            "element": {
+                                "texte": "",
+                                "html": []
+                            }
+                        },
+
+                        {
+                            "name": "scroll-rail",
+
+                            "attr": [],
+
+                            "element": {
+                                "texte": "",
+                                "html": [
+                                    {
+                                        "name": "control-point",
+
+                                        "attr": [
+                                            {"name": "pos", "value": "0 0 10"}
+                                        ],
+
+                                        "element": {
+                                            "texte": "",
+                                            "html": []
+                                        }
+                                    },
+
+                                    {
+                                        "name": "control-point",
+
+                                        "attr": [
+                                            {"name": "pos", "value": "0 0 0"}
+                                        ],
+
+                                        "element": {
+                                            "texte": "",
+                                            "html": []
+                                        }
+                                    },
+
+                                    {
+                                        "name": "control-point",
+
+                                        "attr": [
+                                            {"name": "pos", "value": "12 0 0"}
+                                        ],
+
+                                        "element": {
+                                            "texte": "",
+                                            "html": []
+                                        }
+                                    },
+
+                                    {
+                                        "name": "control-point",
+
+                                        "attr": [
+                                            {"name": "pos", "value": "12 0 -30"}
+                                        ],
+
+                                        "element": {
+                                            "texte": "",
+                                            "html": []
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    ]
+                }
+            }
+        ]
+    }
+}
