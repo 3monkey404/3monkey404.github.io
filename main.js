@@ -1,11 +1,13 @@
 import * as THREE from 'three';
 import data from './data.json' assert { type: 'json' };
+//import data from "data";
 import WebGL from 'three/addons/capabilities/WebGL.js';
 import { GLTFLoader   } from 'three/addons/loaders/GLTFLoader.js';
 import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
 import { FontLoader   } from 'three/addons/loaders/FontLoader.js';
 import { OrbitControls} from 'three/addons/controls/OrbitControls.js';
 
+import * as anim from './animation.js';
 
 class Model3D {
 
@@ -36,7 +38,7 @@ class Model3D {
 class Text3D {
     constructor(text, _color, font, _height, func) {
 
-        this.text = null;
+        this.text;
 
         const loader = new FontLoader();
         loader.load(font, function (font) {
@@ -141,7 +143,7 @@ class World extends HTMLElement {
 
     static get observedAttributes() {
         return ['cam-pos', 'cam-rot', 'render-width', 'render-height', 'cam-look'];
-      }
+    }
 
     attributeChangedCallback(name, oldVal, newVal) {
         switch(name) {
@@ -215,17 +217,23 @@ class Custom3DModel extends ActorElement  {
         var m = new Model3D(this.getAttribute("src"), () => {
             this.model = m.scene;
 
-            this.model.position.set(Number(this.getAttribute("pos").split(' ')[0]),
-                                    Number(this.getAttribute("pos").split(' ')[1]),
-                                    Number(this.getAttribute("pos").split(' ')[2]));
+            this.model.position.set(
+                Number(this.getAttribute("pos").split(' ')[0]),
+                Number(this.getAttribute("pos").split(' ')[1]),
+                Number(this.getAttribute("pos").split(' ')[2])
+            );
 
-            this.model.scale.set(Number(this.getAttribute("sca").split(' ')[0]),
-                                 Number(this.getAttribute("sca").split(' ')[1]),
-                                 Number(this.getAttribute("sca").split(' ')[2]))
+            this.model.scale.set(
+                Number(this.getAttribute("sca").split(' ')[0]),
+                Number(this.getAttribute("sca").split(' ')[1]),
+                Number(this.getAttribute("sca").split(' ')[2])
+            );
 
-            this.model.rotation.set(Number(this.getAttribute("rot").split(' ')[0]),
-                                    Number(this.getAttribute("rot").split(' ')[1]),
-                                    Number(this.getAttribute("rot").split(' ')[2]));
+            this.model.rotation.set(
+                Number(this.getAttribute("rot").split(' ')[0]),
+                Number(this.getAttribute("rot").split(' ')[1]),
+                Number(this.getAttribute("rot").split(' ')[2])
+            );
 
             this.scene.add(this.model);
             s.add(this.scene);
@@ -233,23 +241,38 @@ class Custom3DModel extends ActorElement  {
 
     }
 
+    static get observedAttributes() {
+        return ['pos', 'rot', 'sca'];
+    }
+
     attributeChangedCallback(attrName, oldVal, newVal) {
+
+        if (this.model == undefined || this.model == null) {
+            return;
+        }
+
         switch (attrName) {
             
             case "pos":
-                this.model.position.set(Number(newVal.split(' ')[0]),
-                                        Number(newVal.split(' ')[1]),
-                                        Number(newVal.split(' ')[2]));
+                this.model.position.set(
+                    Number(newVal.split(' ')[0]),
+                    Number(newVal.split(' ')[1]),
+                    Number(newVal.split(' ')[2])
+                );
                 break;
             case "rot":
-                this.model.rotation.set(Number(newVal.split(' ')[0]),
-                                        Number(newVal.split(' ')[1]),
-                                        Number(newVal.split(' ')[2]));
+                this.model.rotation.set(
+                    Number(newVal.split(' ')[0]),
+                    Number(newVal.split(' ')[1]),
+                    Number(newVal.split(' ')[2])
+                    );
                 break;
             case "sca":
-                this.model.scale.set(Number(newVal.split(' ')[0]),
-                                        Number(newVal.split(' ')[1]),
-                                        Number(newVal.split(' ')[2]));
+                this.model.scale.set(
+                    Number(newVal.split(' ')[0]),
+                    Number(newVal.split(' ')[1]),
+                    Number(newVal.split(' ')[2])
+                );
                 break;
             
             default:
@@ -309,39 +332,60 @@ class Base3DModel extends ActorElement {
 
         this.model = new THREE.Mesh(this.geometrie, this.material);
 
-        this.model.position.set(Number(this.getAttribute("pos").split(' ')[0]),
-                                Number(this.getAttribute("pos").split(' ')[1]),
-                                Number(this.getAttribute("pos").split(' ')[2]));
+        this.model.position.set(
+            Number(this.getAttribute("pos").split(' ')[0]),
+            Number(this.getAttribute("pos").split(' ')[1]),
+            Number(this.getAttribute("pos").split(' ')[2])
+        );
 
-        this.model.scale.set(Number(this.getAttribute("sca").split(' ')[0]),
-                             Number(this.getAttribute("sca").split(' ')[1]),
-                             Number(this.getAttribute("sca").split(' ')[2]))
+        this.model.scale.set(
+            Number(this.getAttribute("sca").split(' ')[0]),
+            Number(this.getAttribute("sca").split(' ')[1]),
+            Number(this.getAttribute("sca").split(' ')[2])
+        );
 
-        this.model.rotation.set(Number(this.getAttribute("rot").split(' ')[0]),
-                                Number(this.getAttribute("rot").split(' ')[1]),
-                                Number(this.getAttribute("rot").split(' ')[2]));
+        this.model.rotation.set(
+            Number(this.getAttribute("rot").split(' ')[0]),
+            Number(this.getAttribute("rot").split(' ')[1]),
+            Number(this.getAttribute("rot").split(' ')[2])
+        );
 
         this.scene.add(this.model);
         s.add(this.scene);
     }
 
+    static get observedAttributes() {
+        return ['pos', 'rot', 'sca'];
+    }
+
     attributeChangedCallback(attrName, oldVal, newVal) {
+
+        if (this.model == undefined || this.model == null) {
+            return;
+        }
+
         switch (attrName) {
             
             case "pos":
-                this.model.position.set(Number(newVal.split(' ')[0]),
-                                        Number(newVal.split(' ')[1]),
-                                        Number(newVal.split(' ')[2]));
+                this.model.position.set(
+                    Number(newVal.split(' ')[0]),
+                    Number(newVal.split(' ')[1]),
+                    Number(newVal.split(' ')[2])
+                );
                 break;
             case "rot":
-                this.model.rotation.set(Number(newVal.split(' ')[0]),
-                                        Number(newVal.split(' ')[1]),
-                                        Number(newVal.split(' ')[2]));
+                this.model.rotation.set(
+                    Number(newVal.split(' ')[0]),
+                    Number(newVal.split(' ')[1]),
+                    Number(newVal.split(' ')[2])
+                );
                 break;
             case "sca":
-                this.model.scale.set(Number(newVal.split(' ')[0]),
-                                        Number(newVal.split(' ')[1]),
-                                        Number(newVal.split(' ')[2]));
+                this.model.scale.set(
+                    Number(newVal.split(' ')[0]),
+                    Number(newVal.split(' ')[1]),
+                    Number(newVal.split(' ')[2])
+                );
                 break;
             
             default:
@@ -367,39 +411,60 @@ class Light extends ActorElement {
             this.getAttribute("intensity")
         );
 
-        this.light.position.set(Number(this.getAttribute("pos").split(' ')[0]),
-                                Number(this.getAttribute("pos").split(' ')[1]),
-                                Number(this.getAttribute("pos").split(' ')[2]));
+        this.light.position.set(
+            Number(this.getAttribute("pos").split(' ')[0]),
+            Number(this.getAttribute("pos").split(' ')[1]),
+            Number(this.getAttribute("pos").split(' ')[2])
+            );
 
-        this.light.scale.set(Number(this.getAttribute("sca").split(' ')[0]),
-                             Number(this.getAttribute("sca").split(' ')[1]),
-                             Number(this.getAttribute("sca").split(' ')[2]))
+        this.light.scale.set(
+            Number(this.getAttribute("sca").split(' ')[0]),
+            Number(this.getAttribute("sca").split(' ')[1]),
+            Number(this.getAttribute("sca").split(' ')[2])
+        );
 
-        this.light.rotation.set(Number(this.getAttribute("rot").split(' ')[0]),
-                                Number(this.getAttribute("rot").split(' ')[1]),
-                                Number(this.getAttribute("rot").split(' ')[2]));
+        this.light.rotation.set(
+            Number(this.getAttribute("rot").split(' ')[0]),
+            Number(this.getAttribute("rot").split(' ')[1]),
+            Number(this.getAttribute("rot").split(' ')[2])
+        );
 
         this.scene.add(this.light);
         s.add(this.scene);
     }
 
+    static get observedAttributes() {
+        return ['pos', 'rot', 'sca'];
+    }
+
     attributeChangedCallback(attrName, oldVal, newVal) {
+
+        if (this.light == undefined || this.light == null) {
+            return;
+        }
+
         switch (attrName) {
             
             case "pos":
-                this.light.position.set(Number(newVal.split(' ')[0]),
-                                        Number(newVal.split(' ')[1]),
-                                        Number(newVal.split(' ')[2]));
+                this.light.position.set(
+                    Number(newVal.split(' ')[0]),
+                    Number(newVal.split(' ')[1]),
+                    Number(newVal.split(' ')[2])
+                );
                 break;
             case "rot":
-                this.light.rotation.set(Number(newVal.split(' ')[0]),
-                                        Number(newVal.split(' ')[1]),
-                                        Number(newVal.split(' ')[2]));
+                this.light.rotation.set(
+                    Number(newVal.split(' ')[0]),
+                    Number(newVal.split(' ')[1]),
+                    Number(newVal.split(' ')[2])
+                );
                 break;
             case "sca":
-                this.light.scale.set(Number(newVal.split(' ')[0]),
-                                        Number(newVal.split(' ')[1]),
-                                        Number(newVal.split(' ')[2]));
+                this.light.scale.set(
+                    Number(newVal.split(' ')[0]),
+                    Number(newVal.split(' ')[1]),
+                    Number(newVal.split(' ')[2])
+                );
                 break;
             
             default:
@@ -429,40 +494,65 @@ class Text extends ActorElement {
             this.getAttribute("height"),
         () => {
 
-            this._text.text.position.set(Number(this.getAttribute("pos").split(' ')[0]),
-                                         Number(this.getAttribute("pos").split(' ')[1]),
-                                         Number(this.getAttribute("pos").split(' ')[2]));
+            this._text.text.position.set(
+                Number(this.getAttribute("pos").split(' ')[0]),
+                Number(this.getAttribute("pos").split(' ')[1]),
+                Number(this.getAttribute("pos").split(' ')[2])
+            );
 
-            this._text.text.scale.set(Number(this.getAttribute("sca").split(' ')[0]),
-                                      Number(this.getAttribute("sca").split(' ')[1]),
-                                      Number(this.getAttribute("sca").split(' ')[2]));
+            this._text.text.scale.set(
+                Number(this.getAttribute("sca").split(' ')[0]),
+                Number(this.getAttribute("sca").split(' ')[1]),
+                Number(this.getAttribute("sca").split(' ')[2])
+            );
 
-            this._text.text.rotation.set(Number(this.getAttribute("rot").split(' ')[0]),
-                                         Number(this.getAttribute("rot").split(' ')[1]),
-                                         Number(this.getAttribute("rot").split(' ')[2]));
+            this._text.text.rotation.set(
+                Number(this.getAttribute("rot").split(' ')[0]),
+                Number(this.getAttribute("rot").split(' ')[1]),
+                Number(this.getAttribute("rot").split(' ')[2])
+            );
 
             this.scene.add(this._text.text);
             s.add(this.scene);
         });
     }
 
+    static get observedAttributes() {
+        return ['pos', 'rot', 'sca'];
+    }
+
     attributeChangedCallback(attrName, oldVal, newVal) {
+
+        if (this._text == undefined || this._text == null) {
+            return;
+        }
+
+        if (this._text.text == undefined || this._text.text == null) {
+            return;
+        }
+
         switch (attrName) {
             
             case "pos":
-                this._text.text.position.set(Number(newVal.split(' ')[0]),
-                                            Number(newVal.split(' ')[1]),
-                                            Number(newVal.split(' ')[2]));
+                this._text.text.position.set(
+                    Number(newVal.split(' ')[0]),
+                    Number(newVal.split(' ')[1]),
+                    Number(newVal.split(' ')[2])
+                );
                 break;
             case "rot":
-                this._text.text.rotation.set(Number(newVal.split(' ')[0]),
-                                            Number(newVal.split(' ')[1]),
-                                            Number(newVal.split(' ')[2]));
+                this._text.text.rotation.set(
+                    Number(newVal.split(' ')[0]),
+                    Number(newVal.split(' ')[1]),
+                    Number(newVal.split(' ')[2])
+                );
                 break;
             case "sca":
-                this._text.text.scale.set(Number(newVal.split(' ')[0]),
-                                        Number(newVal.split(' ')[1]),
-                                        Number(newVal.split(' ')[2]));
+                this._text.text.scale.set(
+                    Number(newVal.split(' ')[0]),
+                    Number(newVal.split(' ')[1]),
+                    Number(newVal.split(' ')[2])
+                );
                 break;
             
             default:
@@ -584,14 +674,17 @@ class CustomPage extends HTMLElement {
             var object = null;
 
             switch (_name) {
-                case "custom-3d-model": object = new Custom3DModel(); break;
-                case "basic-3d-model":  object = new Base3DModel();   break;
-                case "custom-3d-light": object = new Light();         break;
-                case "custom-3d-texte": object = new Text3D();        break;
-                case "world-3d":        object = new World();         break;
-                case "cine-rail":       object = new cineRail();      break;
-                case "scroll-rail":     object = new scrollRail();    break;
-                case "control-point":   object = new ControlPoint();  break;
+                case "custom-3d-model": object = new Custom3DModel();          break;
+                case "basic-3d-model":  object = new Base3DModel();            break;
+                case "custom-3d-light": object = new Light();                  break;
+                case "custom-3d-texte": object = new Text();                   break;
+                case "world-3d":        object = new World();                  break;
+                case "cine-rail":       object = new cineRail();               break;
+                case "scroll-rail":     object = new scrollRail();             break;
+                case "control-point":   object = new ControlPoint();           break;
+                case "anim-rotate":     object = new anim.RotateAnimation();   break;
+                case "anim-position":   object = new anim.PositionAnimation(); break;
+                case "anim-scale":      object = new anim.ScaleAnimation();    break;
 
                 default: object = document.createElement(_name); break;
             }
@@ -630,14 +723,17 @@ class CustomPage extends HTMLElement {
                 const _name = _data[i].name;
     
                 switch (_name) {
-                    case "custom-3d-model": object = new Custom3DModel(); break;
-                    case "basic-3d-model":  object = new Base3DModel();   break;
-                    case "custom-3d-light": object = new Light();         break;
-                    case "custom-3d-texte": object = new Text();          break;
-                    case "world-3d":        object = new World();         break;
-                    case "cine-rail":       object = new cineRail();      break;
-                    case "scroll-rail":     object = new scrollRail();    break;
-                    case "control-point":   object = new ControlPoint();  break;
+                    case "custom-3d-model": object = new Custom3DModel();          break;
+                    case "basic-3d-model":  object = new Base3DModel();            break;
+                    case "custom-3d-light": object = new Light();                  break;
+                    case "custom-3d-texte": object = new Text();                   break;
+                    case "world-3d":        object = new World();                  break;
+                    case "cine-rail":       object = new cineRail();               break;
+                    case "scroll-rail":     object = new scrollRail();             break;
+                    case "control-point":   object = new ControlPoint();           break;
+                    case "anim-rotate":     object = new anim.RotateAnimation();   break;
+                    case "anim-position":   object = new anim.PositionAnimation(); break;
+                    case "anim-scale":      object = new anim.ScaleAnimation();    break;
                     
                     default: object = document.createElement(_name); break;
                 }

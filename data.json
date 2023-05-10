@@ -53,7 +53,20 @@
 
                             "element": {
                                 "texte": "",
-                                "html": []
+                                "html": [
+                                    {
+                                        "name": "anim-scale",
+
+                                        "attr": [
+                                            {"name": "end-sca",   "value": "0.2 0.2 0.2"}
+                                        ],
+
+                                        "element": {
+                                            "texte": "",
+                                            "html": []
+                                        }
+                                    }
+                                ]
                             }
                         },
 
