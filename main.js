@@ -683,16 +683,7 @@ class scrollRail extends Rail {
     }
     
     moveTouch(e) {
-        console.log("move");
 
-        if (this.initialX === null) {
-            return;
-        }
-        
-        if (this.initialY === null) {
-            return;
-        }
-        
         var currentX = e.touches[0].clientX;
         var currentY = e.touches[0].clientY;
         
@@ -700,14 +691,8 @@ class scrollRail extends Rail {
         var diffY = this.initialY - currentY;
         
         if (Math.abs(diffX) < Math.abs(diffY)) {
-            // sliding vertical
-            console.log("swipe");
-            this.moveToCurve(diffY * 0.005);
-            
+            this.moveToCurve(diffY * 0.01);
         }
-        
-        // this.initialX = null;
-        // this.initialY = null;   
     } 
 
     connectedCallback() {

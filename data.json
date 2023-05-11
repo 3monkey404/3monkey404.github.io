@@ -57,9 +57,9 @@
                             "attr": [
                                 {"name": "height", "value": 1},
                                 {"name": "sca",    "value": "0.2 0.2 0.2"},
-                                {"name": "pos",    "value": "-6 0 -15"},
+                                {"name": "pos",    "value": "-5 0 -15"},
                                 {"name": "texte",  "value": "jeux\nvideal"},
-                                {"name": "color",  "value": "red"},
+                                {"name": "color",  "value": "red"}, 
                                 {"name": "name",   "value": "jeux-videal-txt"}
                             ],
 
@@ -72,21 +72,6 @@
                                         "attr": [
                                             {"name": "end-sca", "value": "0.2 0.2 0.2"},
                                             {"name": "trigger", "value": "click"}
-                                        ],
-
-                                        "element": {
-                                            "texte": "",
-                                            "html": []
-                                        }
-                                    },
-
-                                    {
-                                        "name": "anim-position",
-
-                                        "attr": [
-                                            {"name": "end-pos", "value": "-6 5 -15"},
-                                            {"name": "start-pos", "value": "-6 0 -15"},
-                                            {"name": "trigger", "value": "hover"}
                                         ],
 
                                         "element": {
