@@ -27,6 +27,17 @@
                     "texte": "",
                     "html": [
                         {
+                            "name": "control-p",
+
+                            "attr": [],
+
+                            "element": {
+                                "texte": "",
+                                "html": []
+                            }
+                        },
+
+                        {
                             "name": "custom-3d-light",
 
                             "attr": [
@@ -45,10 +56,11 @@
 
                             "attr": [
                                 {"name": "height", "value": 1},
-                                {"name": "sca",   "value": "0.2 0.2 0.2"},
-                                {"name": "pos",   "value": "-6 0 -15"},
-                                {"name": "texte", "value": "jeux\nvideal"},
-                                {"name": "color", "value": "red"}
+                                {"name": "sca",    "value": "0.2 0.2 0.2"},
+                                {"name": "pos",    "value": "-6 0 -15"},
+                                {"name": "texte",  "value": "jeux\nvideal"},
+                                {"name": "color",  "value": "red"},
+                                {"name": "name",   "value": "jeux-videal-txt"}
                             ],
 
                             "element": {
@@ -58,7 +70,23 @@
                                         "name": "anim-scale",
 
                                         "attr": [
-                                            {"name": "end-sca",   "value": "0.2 0.2 0.2"}
+                                            {"name": "end-sca", "value": "0.2 0.2 0.2"},
+                                            {"name": "trigger", "value": "click"}
+                                        ],
+
+                                        "element": {
+                                            "texte": "",
+                                            "html": []
+                                        }
+                                    },
+
+                                    {
+                                        "name": "anim-position",
+
+                                        "attr": [
+                                            {"name": "end-pos", "value": "-6 5 -15"},
+                                            {"name": "start-pos", "value": "-6 0 -15"},
+                                            {"name": "trigger", "value": "hover"}
                                         ],
 
                                         "element": {
@@ -75,10 +103,11 @@
 
                             "attr": [
                                 {"name": "height", "value": 1},
-                                {"name": "sca",   "value": "0.2 0.2 0.2"},
-                                {"name": "pos",   "value": "2 0 -50"},
-                                {"name": "texte", "value": "by Denis"},
-                                {"name": "color", "value": "red"}
+                                {"name": "sca",    "value": "0.2 0.2 0.2"},
+                                {"name": "pos",    "value": "2 0 -50"},
+                                {"name": "texte",  "value": "by Denis"},
+                                {"name": "color",  "value": "red"},
+                                {"name": "name",   "value": "by-denis-txt"}
                             ],
 
                             "element": {

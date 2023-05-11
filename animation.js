@@ -7,10 +7,11 @@ class Animation extends HTMLElement {
         this.incrementTime = 1;
         this.time = 0;
         this.parent;
-        this.inAnime = true;
+        this.inAnime = false;
 
-        this.hasAttribute("trigger")   ? this.setAttribute("trigger",   this.getAttribute("trigger"))   : this.setAttribute("trigger",   "");
-        this.hasAttribute("anim-type") ? this.setAttribute("anim-type", this.getAttribute("anim-type")) : this.setAttribute("anim-type", "ping-pong")
+        this.hasAttribute("trigger")    ? this.setAttribute("trigger",    this.getAttribute("trigger"))   :  this.setAttribute("trigger",   "");
+        this.hasAttribute("anim-type")  ? this.setAttribute("anim-type",  this.getAttribute("anim-type")) :  this.setAttribute("anim-type", "ping-pong")
+        this.hasAttribute("start-time") ? this.setAttribute("start-time", this.getAttribute("start-time")) : this.setAttribute("start-time", 0);
     }
 
     SetAnimTime(time) { }
@@ -29,7 +30,6 @@ class RotateAnimation extends Animation {
     }
 
     SetAnimTime(time) {
-        console.log(time);
         var objRot = this.spline.getPoint(time);
 
         this.parent.setAttribute(
@@ -52,6 +52,7 @@ class RotateAnimation extends Animation {
     }
 
     connectedCallback() {
+        this.parentElement.anim.push(this);
         this.parent = this.parentElement;
 
         this.hasAttribute("start-rot") ? this.setAttribute("start-rot", this.getAttribute("start-rot")) : this.setAttribute("start-rot", "0 0 0");
@@ -69,35 +70,40 @@ class RotateAnimation extends Animation {
             Number(this.getAttribute("end-rot").split(' ')[2])
         ));
 
+        this.SetAnimTime(this.getAttribute("start-time"));
         this.animate();
+    }
+
+    updateAnim() {
+        var type = this.getAttribute("anim-type");
+
+        if (type == "loop")
+        {
+            this.time += this.incrementTime;
+            if (this.time > (this.spline.points.length * 100)) {
+                this.time = 0;
+            } else {
+                this.SetAnimTime(this.time / (this.spline.points.length * 100));
+            }
+        }
+        else if (type == "ping-pong") 
+        {
+            this.time += this.incrementTime;
+            if (this.time > (this.spline.points.length * 100)) {
+                this.incrementTime = -1;
+            } else if (this.time <= 0) {
+                this.incrementTime = 1;
+            }
+
+            this.SetAnimTime(this.time / (this.spline.points.length * 100));
+        }
     }
 
     animate() {
         requestAnimationFrame(this.animate.bind(this));
 
-        var type = this.getAttribute("anim-type");
-
         if (this.inAnime) {
-            if (type == "loop")
-            {
-                this.time += this.incrementTime;
-                if (this.time > (this.spline.points.length * 100)) {
-                    this.time = 0;
-                } else {
-                    this.SetAnimTime(this.time / (this.spline.points.length * 100));
-                }
-            }
-            else if (type == "ping-pong") 
-            {
-                this.time += this.incrementTime;
-                if (this.time > (this.spline.points.length * 100)) {
-                    this.incrementTime = -1;
-                } else if (this.time <= 0) {
-                    this.incrementTime = 1;
-                }
-
-                this.SetAnimTime(this.time / (this.spline.points.length * 100));
-            }
+            this.updateAnim();
         }
     }
 }
@@ -110,7 +116,6 @@ class PositionAnimation extends Animation {
     }
 
     SetAnimTime(time) {
-        console.log(time);
         var objPos = this.spline.getPoint(time);
 
         this.parent.setAttribute(
@@ -133,6 +138,7 @@ class PositionAnimation extends Animation {
     }
 
     connectedCallback() {
+        this.parentElement.anim.push(this);
         this.parent = this.parentElement;
 
         this.hasAttribute("start-pos") ? this.setAttribute("start-pos", this.getAttribute("start-pos")) : this.setAttribute("start-pos", "0 0 0");
@@ -150,35 +156,40 @@ class PositionAnimation extends Animation {
             Number(this.getAttribute("end-pos").split(' ')[2])
         ));
 
+        this.SetAnimTime(this.getAttribute("start-time"));
         this.animate();
+    }
+
+    updateAnim() {
+        var type = this.getAttribute("anim-type");
+
+        if (type == "loop")
+        {
+            this.time += this.incrementTime;
+            if (this.time > (this.spline.points.length * 100)) {
+                this.time = 0;
+            } else {
+                this.SetAnimTime(this.time / (this.spline.points.length * 100));
+            }
+        }
+        else if (type == "ping-pong") 
+        {
+            this.time += this.incrementTime;
+            if (this.time > (this.spline.points.length * 100)) {
+                this.incrementTime = -1;
+            } else if (this.time <= 0) {
+                this.incrementTime = 1;
+            }
+
+            this.SetAnimTime(this.time / (this.spline.points.length * 100));
+        }
     }
 
     animate() {
         requestAnimationFrame(this.animate.bind(this));
 
-        var type = this.getAttribute("anim-type");
-
         if (this.inAnime) {
-            if (type == "loop")
-            {
-                this.time += this.incrementTime;
-                if (this.time > (this.spline.points.length * 100)) {
-                    this.time = 0;
-                } else {
-                    this.SetAnimTime(this.time / (this.spline.points.length * 100));
-                }
-            }
-            else if (type == "ping-pong") 
-            {
-                this.time += this.incrementTime;
-                if (this.time > (this.spline.points.length * 100)) {
-                    this.incrementTime = -1;
-                } else if (this.time <= 0) {
-                    this.incrementTime = 1;
-                }
-
-                this.SetAnimTime(this.time / (this.spline.points.length * 100));
-            }
+            this.updateAnim();
         }
     }
 }
@@ -191,7 +202,6 @@ class ScaleAnimation extends Animation {
     }
 
     SetAnimTime(time) {
-        console.log(time);
         var objSca = this.spline.getPoint(time);
 
         this.parent.setAttribute(
@@ -210,13 +220,15 @@ class ScaleAnimation extends Animation {
     }
     Stop() {
         this.inAnime = false;
-        this.parent.setAttribute("sca", "0 0 0");
+        this.parent.setAttribute("sca", this.getAttribute("start-sca"));
     }
 
     connectedCallback() {
         this.parent = this.parentElement;
 
-        this.hasAttribute("start-sca") ? this.setAttribute("start-sca", this.getAttribute("start-sca")) : this.setAttribute("start-sca", "0 0 0");
+        this.parentElement.anim.push(this);
+
+        this.hasAttribute("start-sca") ? this.setAttribute("start-sca", this.getAttribute("start-sca")) : this.setAttribute("start-sca", "0.1 0.1 0.1");
         this.hasAttribute("end-sca")   ? this.setAttribute("end-sca",   this.getAttribute("end-sca"))   : this.setAttribute("end-sca",   "1 1 1");
 
         this.spline.points.push(new THREE.Vector3(
@@ -231,35 +243,39 @@ class ScaleAnimation extends Animation {
             Number(this.getAttribute("end-sca").split(' ')[2])
         ));
 
+        this.SetAnimTime(this.getAttribute("start-time"));
         this.animate();
+    }
+
+    updateAnim() {
+        var type = this.getAttribute("anim-type");
+
+        if (type == "loop")
+        {
+            this.time += this.incrementTime;
+            if (this.time > (this.spline.points.length * 100)) {
+                this.time = 0;
+            } else {
+                this.SetAnimTime(this.time / (this.spline.points.length * 100));
+            }
+        }
+        else if (type == "ping-pong") 
+        {
+            this.time += this.incrementTime;
+            if (this.time > (this.spline.points.length * 100)) {
+                this.incrementTime = -1;
+            } else if (this.time <= 0) {
+                this.incrementTime = 1;
+            }
+
+            this.SetAnimTime(this.time / (this.spline.points.length * 100));
+        }
     }
 
     animate() {
         requestAnimationFrame(this.animate.bind(this));
-
-        var type = this.getAttribute("anim-type");
-
         if (this.inAnime) {
-            if (type == "loop")
-            {
-                this.time += this.incrementTime;
-                if (this.time > (this.spline.points.length * 100)) {
-                    this.time = 0;
-                } else {
-                    this.SetAnimTime(this.time / (this.spline.points.length * 100));
-                }
-            }
-            else if (type == "ping-pong") 
-            {
-                this.time += this.incrementTime;
-                if (this.time > (this.spline.points.length * 100)) {
-                    this.incrementTime = -1;
-                } else if (this.time <= 0) {
-                    this.incrementTime = 1;
-                }
-
-                this.SetAnimTime(this.time / (this.spline.points.length * 100));
-            }
+            this.updateAnim();
         }
     }
 }

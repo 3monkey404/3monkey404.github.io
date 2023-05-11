@@ -1,6 +1,5 @@
 import * as THREE from 'three';
 import data from './data.json' assert { type: 'json' };
-//import data from "data";
 import WebGL from 'three/addons/capabilities/WebGL.js';
 import { GLTFLoader   } from 'three/addons/loaders/GLTFLoader.js';
 import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
@@ -8,6 +7,7 @@ import { FontLoader   } from 'three/addons/loaders/FontLoader.js';
 import { OrbitControls} from 'three/addons/controls/OrbitControls.js';
 
 import * as anim from './animation.js';
+import * as control from "./Controler.js";
 
 class Model3D {
 
@@ -21,6 +21,7 @@ class Model3D {
         this.loader.load( this.path, function ( gltf ) {
 
             this.model = gltf.scene;
+            console.log(gltf.scene);
             this.scene.add(this.model);
             func();
 
@@ -77,6 +78,7 @@ class World extends HTMLElement {
         this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
         this.anchor;
+        this._controler;
 
         if ( WebGL.isWebGLAvailable() ) {
             this.animate();
@@ -180,6 +182,10 @@ class World extends HTMLElement {
     animate() {
         requestAnimationFrame( this.animate.bind(this) );
         this.renderer.render( this.scene, this.camera );
+
+        if (this._controler != null) {
+            this._controler.update();
+        }
     }
 }
 customElements.define("world-3d", World);
@@ -191,14 +197,44 @@ class ActorElement extends HTMLElement {
 
         this.scene = new THREE.Scene();
 
-        // position coordoniate
+        this.anim = new Array();
+
         this.hasAttribute("pos") ? this.setAttribute("pos", this.getAttribute("pos")) : this.setAttribute("pos", "0 0 0");
-
-        // scale coordoniate
         this.hasAttribute("sca") ? this.setAttribute("sca", this.getAttribute("sca")) : this.setAttribute("sca", "1 1 1");
-
-        // rotation coordoniate
         this.hasAttribute("rot") ? this.setAttribute("rot", this.getAttribute("rot")) : this.setAttribute("rot", "0 0 0");
+
+        this.hasAttribute("name") ? this.setAttribute("name", this.getAttribute("name")) : this.setAttribute("name", "");
+    }
+
+    hover() {
+        for (let i = 0; i < this.anim.length; i++) {
+
+            var triggers = this.anim[i].getAttribute("trigger").split(' ');
+
+            for (let t = 0; t < triggers.length; t++) {
+                if (triggers[t] == "hover") {
+                    this.anim[i].updateAnim();
+                }
+            }
+        }  
+    }
+    click() {
+        for (let i = 0; i < this.anim.length; i++) {
+            const _a = this.anim[i];
+
+            var triggers = _a.getAttribute("trigger").split(' ');
+
+            for (let t = 0; t < triggers.length; t++) {
+                if (triggers[t] == "click") {
+                    if (_a.inAnime) {
+                        _a.Pause();
+                    }
+                    else {
+                        _a.Play();
+                    }
+                }
+            }
+        }  
     }
 }
 
@@ -210,7 +246,7 @@ class Custom3DModel extends ActorElement  {
     }
 
     connectedCallback() {
-        this.hasAttribute("src") ? this.setAttribute("src", this.getAttribute("src")) : this.setAttribute("src", "glbModele/baseCube.glb");
+        this.hasAttribute("src") ? this.setAttribute("src", this.getAttribute("src")) : this.setAttribute("src", "glbModel/baseCube.glb");
 
         var s = this.parentElement.scene;
 
@@ -234,6 +270,8 @@ class Custom3DModel extends ActorElement  {
                 Number(this.getAttribute("rot").split(' ')[1]),
                 Number(this.getAttribute("rot").split(' ')[2])
             );
+            
+            m.model.children[0].name = this.getAttribute("name");
 
             this.scene.add(this.model);
             s.add(this.scene);
@@ -349,6 +387,8 @@ class Base3DModel extends ActorElement {
             Number(this.getAttribute("rot").split(' ')[1]),
             Number(this.getAttribute("rot").split(' ')[2])
         );
+
+        this.model.name = this.getAttribute("name");
 
         this.scene.add(this.model);
         s.add(this.scene);
@@ -511,6 +551,8 @@ class Text extends ActorElement {
                 Number(this.getAttribute("rot").split(' ')[1]),
                 Number(this.getAttribute("rot").split(' ')[2])
             );
+            
+            this._text.text.name = this.getAttribute("name");
 
             this.scene.add(this._text.text);
             s.add(this.scene);
@@ -685,6 +727,7 @@ class CustomPage extends HTMLElement {
                 case "anim-rotate":     object = new anim.RotateAnimation();   break;
                 case "anim-position":   object = new anim.PositionAnimation(); break;
                 case "anim-scale":      object = new anim.ScaleAnimation();    break;
+                case "control-p":       object = new control.Controler();      break;
 
                 default: object = document.createElement(_name); break;
             }
@@ -734,6 +777,7 @@ class CustomPage extends HTMLElement {
                     case "anim-rotate":     object = new anim.RotateAnimation();   break;
                     case "anim-position":   object = new anim.PositionAnimation(); break;
                     case "anim-scale":      object = new anim.ScaleAnimation();    break;
+                    case "control-p":       object = new control.Controler();      break;
                     
                     default: object = document.createElement(_name); break;
                 }
