@@ -104,7 +104,7 @@
                             "attr": [
                                 {"name": "height", "value": 1},
                                 {"name": "sca",    "value": "0.2 0.2 0.2"},
-                                {"name": "pos",    "value": "2 0 -50"},
+                                {"name": "pos",    "value": "6 0 -50"},
                                 {"name": "texte",  "value": "by Denis"},
                                 {"name": "color",  "value": "red"},
                                 {"name": "name",   "value": "by-denis-txt"}
@@ -112,7 +112,21 @@
 
                             "element": {
                                 "texte": "",
-                                "html": []
+                                "html": [
+                                    {
+                                        "name": "anim-scale",
+
+                                        "attr": [
+                                            {"name": "end-sca", "value": "0.2 0.2 0.2"},
+                                            {"name": "trigger", "value": "click"}
+                                        ],
+
+                                        "element": {
+                                            "texte": "",
+                                            "html": []
+                                        }
+                                    }
+                                ]
                             }
                         },
 

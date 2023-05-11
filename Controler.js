@@ -15,7 +15,7 @@ class Controler extends HTMLElement {
     connectedCallback() {
         this.parentElement._controler = this;
 
-        this.pointer = new THREE.Vector2();
+        this.pointer   = new THREE.Vector2();
         this.raycaster = new THREE.Raycaster();
     }
 
@@ -30,18 +30,34 @@ class Controler extends HTMLElement {
         const intersects = this.raycaster.intersectObjects( this.parentElement.scene.children );
 
         for ( let i = 0; i < intersects.length; i ++ ) {
+
             const _name = intersects[ i ].object.name;
             this.element = document.getElementsByName(_name);
 
-            if (this.element[0] != null) {
+            if (this.element != null)
+            {
                 this.element[0].hover();
+                this.element = null;
             }
         }
     }
 
     click() {
-        if (this.element[0] != null) {
-            this.element[0].click();
+
+        this.raycaster.setFromCamera( this.pointer, this.parentElement.camera );
+
+        const intersects = this.raycaster.intersectObjects( this.parentElement.scene.children );
+
+        for ( let i = 0; i < intersects.length; i ++ ) {
+
+            const _name = intersects[ i ].object.name;
+            this.element = document.getElementsByName(_name);
+
+            if (this.element != null)
+            {
+                this.element[0].click();
+                this.element = null;
+            }
         }
     }
 }

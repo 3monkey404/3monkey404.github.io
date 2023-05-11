@@ -219,6 +219,7 @@ class ActorElement extends HTMLElement {
         }  
     }
     click() {
+
         for (let i = 0; i < this.anim.length; i++) {
             const _a = this.anim[i];
 
@@ -664,10 +665,50 @@ class scrollRail extends Rail {
 
         this.cam;
 
+        this.initialX = null;
+        this.initialY = null;
+
         addEventListener("wheel", (event) => {
             this.moveToCurve(event.deltaY * 0.1);
         });
+
+        addEventListener("touchstart", this.startTouch.bind(this));
+        addEventListener("touchmove", this.moveTouch.bind(this));
     }
+
+
+    startTouch(e) {
+        this.initialX = e.touches[0].clientX;
+        this.initialY = e.touches[0].clientY;
+    }
+    
+    moveTouch(e) {
+        console.log("move");
+
+        if (this.initialX === null) {
+            return;
+        }
+        
+        if (this.initialY === null) {
+            return;
+        }
+        
+        var currentX = e.touches[0].clientX;
+        var currentY = e.touches[0].clientY;
+        
+        var diffX = this.initialX - currentX;
+        var diffY = this.initialY - currentY;
+        
+        if (Math.abs(diffX) < Math.abs(diffY)) {
+            // sliding vertical
+            console.log("swipe");
+            this.moveToCurve(diffY * 0.005);
+            
+        }
+        
+        // this.initialX = null;
+        // this.initialY = null;   
+    } 
 
     connectedCallback() {
         this.cam = this.parentElement.camera;
