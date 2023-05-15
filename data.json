@@ -66,19 +66,6 @@
                             "element": {
                                 "texte": "",
                                 "html": [
-                                    {
-                                        "name": "anim-scale",
-
-                                        "attr": [
-                                            {"name": "end-sca", "value": "0.2 0.2 0.2"},
-                                            {"name": "trigger", "value": "click"}
-                                        ],
-
-                                        "element": {
-                                            "texte": "",
-                                            "html": []
-                                        }
-                                    }
                                 ]
                             }
                         },
@@ -99,11 +86,11 @@
                                 "texte": "",
                                 "html": [
                                     {
-                                        "name": "anim-scale",
+                                        "name": "anim-scale-scroll",
 
                                         "attr": [
-                                            {"name": "end-sca", "value": "0.2 0.2 0.2"},
-                                            {"name": "trigger", "value": "click"}
+                                            {"name": "start-scroll", "value": 200},
+                                            {"name": "end-scroll", "value": 300}
                                         ],
 
                                         "element": {
@@ -116,7 +103,7 @@
                         },
 
                         {
-                            "name": "scroll-rail",
+                            "name": "scroll-stop-point-rail",
 
                             "attr": [],
 
@@ -167,6 +154,46 @@
 
                                         "attr": [
                                             {"name": "pos", "value": "12 0 -30"}
+                                        ],
+
+                                        "element": {
+                                            "texte": "",
+                                            "html": []
+                                        }
+                                    },
+
+                                    {
+                                        "name": "stop-point",
+
+                                        "attr": [
+                                            {"name": "stopPosIndex", "value": 0}
+                                        ],
+
+                                        "element": {
+                                            "texte": "",
+                                            "html": []
+                                        }
+                                    },
+
+                                    {
+                                        "name": "stop-point",
+
+                                        "attr": [
+                                            {"name": "stopPosIndex", "value": 200}
+                                        ],
+
+                                        "element": {
+                                            "texte": "",
+                                            "html": []
+                                        }
+                                    },
+
+                                    {
+                                        "name": "stop-point",
+
+                                        "attr": [
+                                            {"name": "stopPosIndex", "value": 400},
+                                            {"name": "speed", "value": "0.5"}
                                         ],
 
                                         "element": {

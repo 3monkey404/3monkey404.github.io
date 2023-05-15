@@ -644,21 +644,6 @@ class Rail extends HTMLElement {
                 this.camPosIndex = 0;
             }
 
-            for (let c = 0; c < this.controlMove.length; c++) {
-                if (this.controlMove[c].getAttribute("scroll-val") >= this.camPosIndex) {
-                    let l = this.camPosIndex;
-
-                    for (let i = 0; i < 1000; i++) {
-                        this.camPosIndex = this.lerp(l, this.controlMove[c].getAttribute("scroll-go"), i / 1000);
-                        console.log(this.camPosIndex);
-
-                        let camPos = this.spline.getPoint(this.camPosIndex / (this.spline.points.length * 100));
-                        this.parentElement.setAttribute("cam-pos", camPos.x.toString() + " " + camPos.y.toString() + " " + camPos.z.toString());
-                    }
-                }
-            }
-
-
             if (this.camPosIndex > (this.spline.points.length * 100)) {
                 this.camPosIndex = this.spline.points.length * 100;
                 return;
@@ -667,11 +652,15 @@ class Rail extends HTMLElement {
             let camPos = this.spline.getPoint(this.camPosIndex / (this.spline.points.length * 100));
           
             this.parentElement.setAttribute("cam-pos", camPos.x.toString() + " " + camPos.y.toString() + " " + camPos.z.toString());
-        }
-    }
 
-    lerp (start, end, amt) {
-        return (1 - amt) * start + amt * end
+            const _event = new CustomEvent("camRailChangePosition", {
+                detail: {
+                    camPosIndex: this.camPosIndex
+                }
+            });
+
+            dispatchEvent(_event);
+        }
     }
 }
 
@@ -703,35 +692,65 @@ class scrollRail extends Rail {
 
         this.cam;
 
-        this.initialY = null;
-
-        this.diffY;
-
-        this.onSweep = false;
-
         addEventListener("wheel", (event) => {
             this.moveToCurve(event.deltaY * 0.1);
         });
 
-        addEventListener("touchstart", this.startTouch.bind(this));
-        addEventListener("touchend",   this.endTouch.bind(this));
-        addEventListener("touchmove",  this.moveTouch.bind(this));
+        addEventListener("sweep", (event) => {
+            console.log(event);
+            this.moveToCurve(event.detail.deltaY * 0.01);
+        })
     }
 
-    endTouch(e) {
-        this.onSweep = false;
-    }
+    connectedCallback() {
+        this.cam = this.parentElement.camera;
 
-    startTouch(e) {
-        this.initialY = e.touches[0].clientY;
-        this.onSweep = true;
+        if (this.cam == undefined) {
+            console.error("le parent doit etre un world-3d");
+        }
     }
-    
-    moveTouch(e) {
+}
+class scrollStopPointRail extends Rail {
+    constructor() {
+        super();
 
-        let currentY = e.touches[0].clientY;
-        this.diffY = this.initialY - currentY;
-    } 
+        this.stopPoint = new Array();
+        this.onMove = false;
+        this.index = 0;
+        this.direction = 0;
+
+        addEventListener("wheel", (event) => {
+
+            if (!this.onMove) {
+
+                if (event.deltaY > 0) {
+                    this.index = this.index + 1 >= this.stopPoint.length ? this.index = this.stopPoint.length - 1 : this.index + 1;
+                    this.direction = 1;
+                } else {
+                    this.index = this.index - 1 <= 0 ? 0 : this.index - 1;
+                    this.direction = -1;
+                }
+
+                this.onMove = true;
+            }
+        });
+        addEventListener("sweep", (event) => {
+
+            if (!this.onMove) {
+
+                if (event.detail.deltaY > 0) {
+                    this.index = this.index + 1 >= this.stopPoint.length ? this.index = this.stopPoint.length - 1 : this.index + 1;
+                    this.direction = 1;
+                } else {
+
+                    this.index = this.index - 1 <= 0 ? 0 : this.index - 1;
+                    this.direction = -1;
+                }
+
+                this.onMove = true;
+            }
+        })
+    }
 
     connectedCallback() {
         this.cam = this.parentElement.camera;
@@ -744,13 +763,31 @@ class scrollRail extends Rail {
     }
 
     animate() {
-        requestAnimationFrame(this.animate.bind(this));
+        requestAnimationFrame(this.animate.bind(this))
 
-        if(this.onSweep) {
-            this.moveToCurve(this.diffY * 0.01);
+        if (this.stopPoint.length > 0) {
+            if (this.onMove) {
+
+                if (this.direction == 1) {
+
+                    if (this.camPosIndex >= this.stopPoint[this.index].getAttribute("stopPosIndex")) {
+                        this.onMove = false;
+                        return;
+                    }
+                }else if (this.direction == -1) {
+
+                    if (this.camPosIndex <= this.stopPoint[this.index].getAttribute("stopPosIndex")) {
+                        this.onMove = false;
+                        return;
+                    }
+                }
+
+                this.moveToCurve(this.direction * Number(this.stopPoint[this.index].getAttribute("speed")));
+            }
         }
     }
 }
+
 
 class ControlPoint extends HTMLElement {
     constructor() {
@@ -769,27 +806,26 @@ class ControlPoint extends HTMLElement {
                                                   Number(this.getAttribute("pos").split(' ')[2])));
     }
 }
-class ControlMove extends HTMLElement {
+class StopPoint extends HTMLElement {
     constructor() {
         super();
 
-        this.controlMove;
+        this.hasAttribute("stopPosIndex") ? this.setAttribute("stopPosIndex", this.getAttribute("stopPosIndex")) : this.setAttribute("stopPosIndex", 0);
+        this.hasAttribute("speed")        ? this.setAttribute("speed",        this.getAttribute("speed"))        : this.setAttribute("speed", "1.5");
     }
 
     connectedCallback() {
-        this.controlMove = this.parentElement.controlMove;
-
-        this.hasAttribute("scroll-val") ? this.setAttribute("scroll-val", this.getAttribute("scroll-val")) : this.setAttribute("scroll-val", 0);
-        this.hasAttribute("scroll-go")  ? this.setAttribute("scroll-go",  this.getAttribute("scroll-go"))  : this.setAttribute("scroll-go", 100);
-        
-        this.controlMove.push(this);
+        this.parentElement.stopPoint.push(this);
     }
 }
 
 customElements.define("cine-rail", cineRail);
 customElements.define("scroll-rail", scrollRail);
+customElements.define("scroll-stop-point-rail", scrollStopPointRail)
+
 customElements.define("control-point", ControlPoint);
-customElements.define("control-move", ControlMove);
+customElements.define("stop-point", StopPoint)
+
 
 class CustomPage extends HTMLElement {
     constructor() {
@@ -812,13 +848,23 @@ class CustomPage extends HTMLElement {
                 case "custom-3d-light": object = new Light();                  break;
                 case "custom-3d-texte": object = new Text();                   break;
                 case "world-3d":        object = new World();                  break;
-                case "cine-rail":       object = new cineRail();               break;
-                case "scroll-rail":     object = new scrollRail();             break;
+
+                case "scroll-stop-point-rail": object = new scrollStopPointRail(); break;
+                case "cine-rail":              object = new cineRail();            break;
+                case "scroll-rail":            object = new scrollRail();          break;
+
+                case "stop-point":      object = new StopPoint();              break;
                 case "control-point":   object = new ControlPoint();           break;
+
                 case "anim-rotate":     object = new anim.RotateAnimation();   break;
                 case "anim-position":   object = new anim.PositionAnimation(); break;
                 case "anim-scale":      object = new anim.ScaleAnimation();    break;
+
                 case "control-p":       object = new control.Controler();      break;
+
+                case "anim-rotate-scroll":   object = new anim.RotateAnimationScroll();   break;
+                case "anim-position-scroll": object = new anim.PositionAnimationScroll(); break;
+                case "anim-scale-scroll":    object = new anim.ScaleAnimationScroll();    break;
 
                 default: object = document.createElement(_name); break;
             }
@@ -862,14 +908,24 @@ class CustomPage extends HTMLElement {
                     case "custom-3d-light": object = new Light();                  break;
                     case "custom-3d-texte": object = new Text();                   break;
                     case "world-3d":        object = new World();                  break;
-                    case "cine-rail":       object = new cineRail();               break;
-                    case "scroll-rail":     object = new scrollRail();             break;
+    
+                    case "scroll-stop-point-rail": object = new scrollStopPointRail(); break;
+                    case "cine-rail":              object = new cineRail();            break;
+                    case "scroll-rail":            object = new scrollRail();          break;
+    
+                    case "stop-point":      object = new StopPoint();              break;
                     case "control-point":   object = new ControlPoint();           break;
+    
                     case "anim-rotate":     object = new anim.RotateAnimation();   break;
                     case "anim-position":   object = new anim.PositionAnimation(); break;
                     case "anim-scale":      object = new anim.ScaleAnimation();    break;
+    
                     case "control-p":       object = new control.Controler();      break;
-                    
+    
+                    case "anim-rotate-scroll":   object = new anim.RotateAnimationScroll();   break;
+                    case "anim-position-scroll": object = new anim.PositionAnimationScroll(); break;
+                    case "anim-scale-scroll":    object = new anim.ScaleAnimationScroll();    break;
+
                     default: object = document.createElement(_name); break;
                 }
                 
