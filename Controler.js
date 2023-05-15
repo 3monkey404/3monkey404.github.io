@@ -25,6 +25,7 @@ class Controler extends HTMLElement {
     }
 
     update() {
+        
         this.raycaster.setFromCamera( this.pointer, this.parentElement.camera );
 
         const intersects = this.raycaster.intersectObjects( this.parentElement.scene.children );

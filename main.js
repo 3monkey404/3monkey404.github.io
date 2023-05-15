@@ -284,6 +284,10 @@ class Custom3DModel extends ActorElement  {
         return ['pos', 'rot', 'sca'];
     }
 
+    get Model() {
+        return this.model;
+    }
+
     attributeChangedCallback(attrName, oldVal, newVal) {
 
         if (this.model == undefined || this.model == null) {
@@ -399,6 +403,10 @@ class Base3DModel extends ActorElement {
         return ['pos', 'rot', 'sca'];
     }
 
+    get Model() {
+        return this.model;
+    }
+
     attributeChangedCallback(attrName, oldVal, newVal) {
 
         if (this.model == undefined || this.model == null) {
@@ -478,6 +486,10 @@ class Light extends ActorElement {
         return ['pos', 'rot', 'sca'];
     }
 
+    get Model() {
+        return this.light;
+    }
+
     attributeChangedCallback(attrName, oldVal, newVal) {
 
         if (this.light == undefined || this.light == null) {
@@ -517,7 +529,7 @@ class Text extends ActorElement {
     constructor() {
         super();
 
-        this._text = null;
+        this.t = null;
     }
 
     connectedCallback() {
@@ -528,34 +540,34 @@ class Text extends ActorElement {
         this.hasAttribute("font")   ? this.setAttribute("font",   this.getAttribute("font"))   : this.setAttribute("font",  "fonts/regular.json");
         this.hasAttribute("height") ? this.setAttribute("height", this.getAttribute("height")) : this.setAttribute("height", 1)
 
-        this._text = new Text3D(
+        this.t = new Text3D(
             this.getAttribute("texte"),
             this.getAttribute("color"),
             this.getAttribute("font"),
             this.getAttribute("height"),
         () => {
 
-            this._text.text.position.set(
+            this.t.text.position.set(
                 Number(this.getAttribute("pos").split(' ')[0]),
                 Number(this.getAttribute("pos").split(' ')[1]),
                 Number(this.getAttribute("pos").split(' ')[2])
             );
 
-            this._text.text.scale.set(
+            this.t.text.scale.set(
                 Number(this.getAttribute("sca").split(' ')[0]),
                 Number(this.getAttribute("sca").split(' ')[1]),
                 Number(this.getAttribute("sca").split(' ')[2])
             );
 
-            this._text.text.rotation.set(
+            this.t.text.rotation.set(
                 Number(this.getAttribute("rot").split(' ')[0]),
                 Number(this.getAttribute("rot").split(' ')[1]),
                 Number(this.getAttribute("rot").split(' ')[2])
             );
             
-            this._text.text.name = this.getAttribute("name");
+            this.t.text.name = this.getAttribute("name");
 
-            this.scene.add(this._text.text);
+            this.scene.add(this.t.text);
             s.add(this.scene);
         });
     }
@@ -564,34 +576,38 @@ class Text extends ActorElement {
         return ['pos', 'rot', 'sca'];
     }
 
+    get Model() {
+        return this.t.text;
+    }
+
     attributeChangedCallback(attrName, oldVal, newVal) {
 
-        if (this._text == undefined || this._text == null) {
+        if (this.t == undefined || this.t == null) {
             return;
         }
 
-        if (this._text.text == undefined || this._text.text == null) {
+        if (this.t.text == undefined || this.t.text == null) {
             return;
         }
 
         switch (attrName) {
             
             case "pos":
-                this._text.text.position.set(
+                this.t.text.position.set(
                     Number(newVal.split(' ')[0]),
                     Number(newVal.split(' ')[1]),
                     Number(newVal.split(' ')[2])
                 );
                 break;
             case "rot":
-                this._text.text.rotation.set(
+                this.t.text.rotation.set(
                     Number(newVal.split(' ')[0]),
                     Number(newVal.split(' ')[1]),
                     Number(newVal.split(' ')[2])
                 );
                 break;
             case "sca":
-                this._text.text.scale.set(
+                this.t.text.scale.set(
                     Number(newVal.split(' ')[0]),
                     Number(newVal.split(' ')[1]),
                     Number(newVal.split(' ')[2])
@@ -613,27 +629,49 @@ class Rail extends HTMLElement {
     constructor() {
         super();
 
-        this.spline = new THREE.CatmullRomCurve3();;
+        this.spline = new THREE.CatmullRomCurve3();
         this.camPosIndex = 0;
+
+        this.controlMove = new Array();
     }
 
     moveToCurve(moveValue) {
         if(this.spline.points.length > 1) {
-            this.camPosIndex += moveValue;
+
+            this.camPosIndex += isNaN(moveValue) ? 0 : moveValue;
 
             if (this.camPosIndex < 0) {
                 this.camPosIndex = 0;
-            } 
+            }
+
+            for (let c = 0; c < this.controlMove.length; c++) {
+                if (this.controlMove[c].getAttribute("scroll-val") >= this.camPosIndex) {
+                    let l = this.camPosIndex;
+
+                    for (let i = 0; i < 1000; i++) {
+                        this.camPosIndex = this.lerp(l, this.controlMove[c].getAttribute("scroll-go"), i / 1000);
+                        console.log(this.camPosIndex);
+
+                        let camPos = this.spline.getPoint(this.camPosIndex / (this.spline.points.length * 100));
+                        this.parentElement.setAttribute("cam-pos", camPos.x.toString() + " " + camPos.y.toString() + " " + camPos.z.toString());
+                    }
+                }
+            }
+
 
             if (this.camPosIndex > (this.spline.points.length * 100)) {
                 this.camPosIndex = this.spline.points.length * 100;
                 return;
             }
-    
-            var camPos = this.spline.getPoint(this.camPosIndex / (this.spline.points.length * 100));
+            
+            let camPos = this.spline.getPoint(this.camPosIndex / (this.spline.points.length * 100));
           
             this.parentElement.setAttribute("cam-pos", camPos.x.toString() + " " + camPos.y.toString() + " " + camPos.z.toString());
         }
+    }
+
+    lerp (start, end, amt) {
+        return (1 - amt) * start + amt * end
     }
 }
 
@@ -665,34 +703,34 @@ class scrollRail extends Rail {
 
         this.cam;
 
-        this.initialX = null;
         this.initialY = null;
+
+        this.diffY;
+
+        this.onSweep = false;
 
         addEventListener("wheel", (event) => {
             this.moveToCurve(event.deltaY * 0.1);
         });
 
         addEventListener("touchstart", this.startTouch.bind(this));
-        addEventListener("touchmove", this.moveTouch.bind(this));
+        addEventListener("touchend",   this.endTouch.bind(this));
+        addEventListener("touchmove",  this.moveTouch.bind(this));
     }
 
+    endTouch(e) {
+        this.onSweep = false;
+    }
 
     startTouch(e) {
-        this.initialX = e.touches[0].clientX;
         this.initialY = e.touches[0].clientY;
+        this.onSweep = true;
     }
     
     moveTouch(e) {
 
-        var currentX = e.touches[0].clientX;
-        var currentY = e.touches[0].clientY;
-        
-        var diffX = this.initialX - currentX;
-        var diffY = this.initialY - currentY;
-        
-        if (Math.abs(diffX) < Math.abs(diffY)) {
-            this.moveToCurve(diffY * 0.01);
-        }
+        let currentY = e.touches[0].clientY;
+        this.diffY = this.initialY - currentY;
     } 
 
     connectedCallback() {
@@ -700,6 +738,16 @@ class scrollRail extends Rail {
 
         if (this.cam == undefined) {
             console.error("le parent doit etre un world-3d");
+        }
+
+        this.animate();
+    }
+
+    animate() {
+        requestAnimationFrame(this.animate.bind(this));
+
+        if(this.onSweep) {
+            this.moveToCurve(this.diffY * 0.01);
         }
     }
 }
@@ -721,10 +769,27 @@ class ControlPoint extends HTMLElement {
                                                   Number(this.getAttribute("pos").split(' ')[2])));
     }
 }
+class ControlMove extends HTMLElement {
+    constructor() {
+        super();
+
+        this.controlMove;
+    }
+
+    connectedCallback() {
+        this.controlMove = this.parentElement.controlMove;
+
+        this.hasAttribute("scroll-val") ? this.setAttribute("scroll-val", this.getAttribute("scroll-val")) : this.setAttribute("scroll-val", 0);
+        this.hasAttribute("scroll-go")  ? this.setAttribute("scroll-go",  this.getAttribute("scroll-go"))  : this.setAttribute("scroll-go", 100);
+        
+        this.controlMove.push(this);
+    }
+}
 
 customElements.define("cine-rail", cineRail);
 customElements.define("scroll-rail", scrollRail);
 customElements.define("control-point", ControlPoint);
+customElements.define("control-move", ControlMove);
 
 class CustomPage extends HTMLElement {
     constructor() {
