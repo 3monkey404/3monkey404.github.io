@@ -57,13 +57,21 @@ class Controler extends HTMLElement {
 
         for ( let i = 0; i < intersects.length; i ++ ) {
 
-            const _name = intersects[ i ].object.name;
-            this.element = document.getElementsByName(_name);
+            if (intersects[i].object.type == "SkinnedMesh") {
+                const _name = intersects[ i ].object.parent.parent.name;
+                this.element = document.getElementsByName(_name);
+            }
+            else {
+                const _name = intersects[ i ].object.name;
+                this.element = document.getElementsByName(_name);
+            }
 
-            if (this.element != null)
-            {
-                this.element[0].hover();
-                this.element = null;
+            if (this.element[0] != undefined) {
+                if (this.element[0] != null)
+                {
+                    this.element[0].hover();
+                    this.element = null;
+                }
             }
         }
     }
@@ -76,13 +84,23 @@ class Controler extends HTMLElement {
 
         for ( let i = 0; i < intersects.length; i ++ ) {
 
-            const _name = intersects[ i ].object.name;
-            this.element = document.getElementsByName(_name);
+            if (intersects[i].object.type == "SkinnedMesh") {
+                const _name = intersects[ i ].object.parent.parent.name;
+                this.element = document.getElementsByName(_name);
+            }
+            else {
+                const _name = intersects[ i ].object.name;
+                this.element = document.getElementsByName(_name);
+            }
 
-            if (this.element != null)
-            {
-                this.element[0].click();
-                this.element = null;
+            console.log(this.element)
+            if (this.element[0] != undefined) {
+                if (this.element[0] != null)
+                {
+                    this.element[0].click();
+                    this.element = null;
+                    return;
+                }
             }
         }
     }

@@ -18,11 +18,19 @@ class Model3D {
 
         this.loader = new GLTFLoader();
 
+        this.mixer;
+        this.gltf;
+
         this.loader.load( this.path, function ( gltf ) {
 
-            this.model = gltf.scene;
-            console.log(gltf.scene);
+            this.gltf = gltf;
+            this.model = this.gltf.scene;
             this.scene.add(this.model);
+            console.log(gltf);
+            
+            this.mixer = new THREE.AnimationMixer(this.gltf.scene);
+
+            this.animate();
             func();
 
         }.bind(this), undefined, function ( error ) {
@@ -30,6 +38,12 @@ class Model3D {
             console.error( error );
 
         } );
+    }
+
+    animate() {
+        requestAnimationFrame(this.animate.bind(this))
+
+        this.mixer.update(0.05);
     }
 
     get Model() {
@@ -219,7 +233,6 @@ class ActorElement extends HTMLElement {
         }  
     }
     click() {
-
         for (let i = 0; i < this.anim.length; i++) {
             const _a = this.anim[i];
 
@@ -244,6 +257,8 @@ class Custom3DModel extends ActorElement  {
         super();
 
         this.model = null;
+        this.classModel;
+        this.onModelLoad;
     }
 
     connectedCallback() {
@@ -251,8 +266,8 @@ class Custom3DModel extends ActorElement  {
 
         var s = this.parentElement.scene;
 
-        var m = new Model3D(this.getAttribute("src"), () => {
-            this.model = m.scene;
+        this.classModel = new Model3D(this.getAttribute("src"), () => {
+            this.model = this.classModel.scene;
 
             this.model.position.set(
                 Number(this.getAttribute("pos").split(' ')[0]),
@@ -272,12 +287,30 @@ class Custom3DModel extends ActorElement  {
                 Number(this.getAttribute("rot").split(' ')[2])
             );
             
-            m.model.children[0].name = this.getAttribute("name");
-
+            //this.changeName(this.getAttribute("name"), this.classModel.model.children);
+            this.classModel.model.children[0].name = this.getAttribute("name");
+            
             this.scene.add(this.model);
             s.add(this.scene);
+
+            console.log(this.classModel.gltf);
+
+            if (this.onModelLoad != null) {
+                this.onModelLoad();
+            }
         });
 
+    }
+
+    changeName(name, children) {
+        if (children.length <= 0) {
+            return;
+        }
+
+        for (let i = 0; i < children.length; i++) {
+            children[i].name = name;
+            this.changeName(name, children[i].children);
+        }
     }
 
     static get observedAttributes() {
@@ -819,8 +852,8 @@ class StopPoint extends HTMLElement {
     }
 }
 
-customElements.define("cine-rail", cineRail);
-customElements.define("scroll-rail", scrollRail);
+customElements.define("cine-rail",              cineRail);
+customElements.define("scroll-rail",            scrollRail);
 customElements.define("scroll-stop-point-rail", scrollStopPointRail)
 
 customElements.define("control-point", ControlPoint);
@@ -866,6 +899,8 @@ class CustomPage extends HTMLElement {
                 case "anim-position-scroll": object = new anim.PositionAnimationScroll(); break;
                 case "anim-scale-scroll":    object = new anim.ScaleAnimationScroll();    break;
 
+                case "anim-model": object = new anim.ModelAnimation(); break;
+
                 default: object = document.createElement(_name); break;
             }
 
@@ -887,7 +922,6 @@ class CustomPage extends HTMLElement {
     createElementwithParent(_element, parent) {
 
         var object = null;
-
 
         if (_element.texte != "") {
             const texteContent = document.createTextNode(_element.texte);
@@ -925,6 +959,8 @@ class CustomPage extends HTMLElement {
                     case "anim-rotate-scroll":   object = new anim.RotateAnimationScroll();   break;
                     case "anim-position-scroll": object = new anim.PositionAnimationScroll(); break;
                     case "anim-scale-scroll":    object = new anim.ScaleAnimationScroll();    break;
+
+                    case "anim-model": object = new anim.ModelAnimation(); break;
 
                     default: object = document.createElement(_name); break;
                 }

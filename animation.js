@@ -9,9 +9,10 @@ class Animation extends HTMLElement {
         this.parent;
         this.inAnime = false;
 
-        this.hasAttribute("trigger")    ? this.setAttribute("trigger",    this.getAttribute("trigger"))   :  this.setAttribute("trigger",   "");
-        this.hasAttribute("anim-type")  ? this.setAttribute("anim-type",  this.getAttribute("anim-type")) :  this.setAttribute("anim-type", "ping-pong")
+        this.hasAttribute("trigger")    ? this.setAttribute("trigger",    this.getAttribute("trigger"))    : this.setAttribute("trigger",   "click");
+        this.hasAttribute("anim-type")  ? this.setAttribute("anim-type",  this.getAttribute("anim-type"))  : this.setAttribute("anim-type", "ping-pong")
         this.hasAttribute("start-time") ? this.setAttribute("start-time", this.getAttribute("start-time")) : this.setAttribute("start-time", 0);
+        this.hasAttribute("speed")      ? this.setAttribute("speed",      this.getAttribute("speed"))      : this.setAttribute("speed", "1")
     }
 
     SetAnimTime(time) { }
@@ -123,7 +124,7 @@ class PositionAnimation extends Animation {
     SetAnimTime(time) {
         var objPos = this.spline.getPoint(time);
 
-        this.parent.setAttribute(
+        this.parentElement.setAttribute(
             "pos",
               objPos.x.toString() + " "
             + objPos.y.toString() + " "
@@ -144,7 +145,6 @@ class PositionAnimation extends Animation {
 
     connectedCallback() {
         this.parentElement.anim.push(this);
-        this.parent = this.parentElement;
 
         this.hasAttribute("start-pos") ? this.setAttribute("start-pos", this.getAttribute("start-pos")) : this.setAttribute("start-pos", "0 0 0");
         this.hasAttribute("end-pos")   ? this.setAttribute("end-pos",   this.getAttribute("end-pos"))   : this.setAttribute("end-pos",   "0 90 0");
@@ -167,6 +167,7 @@ class PositionAnimation extends Animation {
 
     updateAnim() {
         var type = this.getAttribute("anim-type");
+        console.log(type);
 
         if (type == "loop")
         {
@@ -178,7 +179,7 @@ class PositionAnimation extends Animation {
             }
         }
         else if (type == "ping-pong") 
-        {
+        {   
             this.time += this.incrementTime;
             if (this.time > (this.spline.points.length * 100)) {
                 this.incrementTime = -1;
@@ -231,6 +232,7 @@ class ScaleAnimation extends Animation {
     connectedCallback() {
         this.parent = this.parentElement;
 
+        console.log(this.parent);
         this.parentElement.anim.push(this);
 
         this.hasAttribute("start-sca") ? this.setAttribute("start-sca", this.getAttribute("start-sca")) : this.setAttribute("start-sca", "0.1 0.1 0.1");
@@ -474,6 +476,110 @@ class ScaleAnimationScroll extends Animation {
 }
 
 
+class ModelAnimation extends Animation {
+    constructor() {
+        super();
+
+        this.mixer;
+        this.gltf;
+
+        this.anim;
+    }
+
+    SetAnimTime(time) {
+        this.anim.time = time;
+    }
+
+    Play() {
+        console.log("start");
+        this.inAnime = true;
+    }
+    Pause() {
+        console.log("pause");
+        this.inAnime = false;
+    }
+    Stop() {
+        this.inAnime = false;
+        this.anim.time = 0;
+    }
+
+    connectedCallback() {
+
+        this.parentElement.anim.push(this);
+
+        this.parentElement.onModelLoad = () => {
+
+            this.mixer = this.parentElement.classModel.mixer;
+            this.gltf  = this.parentElement.classModel.gltf;
+    
+            this.hasAttribute("anim-name") ? this.setAttribute("anim-name", this.getAttribute("anim-name")) : this.setAttribute("anim-name", "");
+    
+            let clip = THREE.AnimationClip.findByName( this.gltf.animations, this.getAttribute("anim-name") );
+            this.anim = this.mixer.clipAction(clip);
+
+            this.anim.play();
+            this.SetAnimTime(this.getAttribute("start-time"));
+            this.anim.paused = true;
+
+            this.animate();
+        }
+    }
+
+    updateAnim() {
+        var type = this.getAttribute("anim-type");
+
+        if (type == "loop")
+        {
+            this.time += 1;
+            if (this.time > (this.anim._clip.duration * 100)) {
+                this.time = 0;
+            } else {
+                this.SetAnimTime(this.time / (this.anim._clip.duration * 100));
+            }
+        }
+        else if (type == "ping-pong")
+        {
+            this.time += this.incrementTime;
+            if (this.time > (this.anim._clip.duration * 100)) {
+                this.incrementTime = -1;
+            } else if (this.time <= 0) {
+                this.incrementTime = 1;
+            }
+
+            this.SetAnimTime(this.time / (this.anim._clip.duration * 100));
+        }
+    }
+
+    animate() {
+       requestAnimationFrame(this.animate.bind(this));
+
+       if (this.inAnime) {
+        this.updateAnim();
+       }
+    }
+}
+class ModelAnimationScroll extends Animation {
+    constructor() {
+        super();
+    }
+
+    connectedCallback() {
+
+        this.parentElement.anim.push(this);
+
+        this.hasAttribute("start-scroll") ? this.setAttribute("start-scroll", this.getAttribute("start-scroll")) : this.setAttribute("start-scroll", 40);
+        this.hasAttribute("end-scroll")   ? this.setAttribute("end-scroll",   this.getAttribute("end-scroll"))   : this.setAttribute("end-scroll", 150);
+
+        addEventListener("camRailChangePosition", (event) => {
+
+            const scrollY = event.detail.camPosIndex;
+
+            this.SetAnimTime(this.clamp(this.map_range(scrollY, this.getAttribute("end-scroll"), this.getAttribute("start-scroll"), 1, 0), 0, 1));
+        })
+    }
+}
+
+
 customElements.define("anim-rotate",   RotateAnimation);
 customElements.define("anim-position", PositionAnimation);
 customElements.define("anim-scale",    ScaleAnimation);
@@ -482,4 +588,11 @@ customElements.define("anim-rotate-scroll",   RotateAnimationScroll);
 customElements.define("anim-position-scroll", PositionAnimationScroll);
 customElements.define("anim-scale-scroll",    ScaleAnimationScroll);
 
-export { RotateAnimation, PositionAnimation, ScaleAnimation, RotateAnimationScroll, PositionAnimationScroll, ScaleAnimationScroll }
+customElements.define("anim-model",        ModelAnimation);
+customElements.define("anim-model-scroll", ModelAnimationScroll);
+
+export {
+     RotateAnimation, PositionAnimation, ScaleAnimation,
+     RotateAnimationScroll, PositionAnimationScroll, ScaleAnimationScroll,
+     ModelAnimation
+}
