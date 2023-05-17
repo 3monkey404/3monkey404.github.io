@@ -243,7 +243,6 @@
             {
                 "name": "world-3d",
                 "attr": [
-                    {"name": "controler", "value": ""},
                     {"name": "bg-color", "value": "grey"}
                 ],
                 "element": {
@@ -259,25 +258,26 @@
                         },
 
                         {
-                            "name": "custom-3d-model",
+                            "name": "basic-3d-model",
                             "attr": [
-                                {"name": "src", "value": "./glbModel/Testchwalier2.glb"},
-                                {"name": "name", "value": "model"}
                             ],
                             "element": {
                                 "texte": "",
                                 "html": [
-                                    {
-                                        "name": "anim-model",
-                                        "attr": [
-                                            {"name": "anim-name", "value": "BrasHonneur"},
-                                            {"name": "start-time", "value": 1}
-                                        ],
-                                        "element": {
-                                            "texte": "",
-                                            "html": []
-                                        }
-                                    }
+                                ]
+                            }
+                        },
+
+                        {
+                            "name": "basic-3d-model",
+                            "attr": [
+                                {"name": "color", "value": "red"},
+                                {"name": "pos", "value": "0 -1.2 0"},
+                                {"name": "sca", "value": "20 1 20"}
+                            ],
+                            "element": {
+                                "texte": "",
+                                "html": [
                                 ]
                             }
                         },
@@ -290,6 +290,69 @@
                             "element": {
                                 "texte": "",
                                 "html": []
+                            }
+                        },
+
+                        {
+                            "name": "scroll-stop-point-rail",
+
+                            "attr": [],
+
+                            "element": {
+                                "texte": "",
+                                "html": [
+                                    {
+                                        "name": "control-point",
+
+                                        "attr": [
+                                            {"name": "pos", "value": "0 0 50"}
+                                        ],
+
+                                        "element": {
+                                            "texte": "",
+                                            "html": []
+                                        }
+                                    },
+
+                                    {
+                                        "name": "control-point",
+
+                                        "attr": [
+                                            {"name": "pos", "value": "0 0 10"}
+                                        ],
+
+                                        "element": {
+                                            "texte": "",
+                                            "html": []
+                                        }
+                                    },
+
+                                    {
+                                        "name": "stop-point",
+
+                                        "attr": [
+                                            {"name": "stopPosIndex", "value": 0}
+                                        ],
+
+                                        "element": {
+                                            "texte": "",
+                                            "html": []
+                                        }
+                                    },
+
+                                    {
+                                        "name": "stop-point",
+
+                                        "attr": [
+                                            {"name": "stopPosIndex", "value": 200}
+                                        ],
+
+                                        "element": {
+                                            "texte": "",
+                                            "html": []
+                                        }
+                                    }
+                                ]
                             }
                         }
                     ]

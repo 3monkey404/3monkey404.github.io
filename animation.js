@@ -561,21 +561,62 @@ class ModelAnimation extends Animation {
 class ModelAnimationScroll extends Animation {
     constructor() {
         super();
+
+        this.mixer;
+        this.gltf;
+
+        this.anim;
+    }
+
+    SetAnimTime(time) {
+        this.anim.time = time;
+    }
+
+    Play() {
+        console.log("start");
+        this.inAnime = true;
+    }
+    Pause() {
+        console.log("pause");
+        this.inAnime = false;
+    }
+    Stop() {
+        this.inAnime = false;
+        this.anim.time = 0;
+    }
+
+    updateAnim() {
+
     }
 
     connectedCallback() {
 
         this.parentElement.anim.push(this);
 
-        this.hasAttribute("start-scroll") ? this.setAttribute("start-scroll", this.getAttribute("start-scroll")) : this.setAttribute("start-scroll", 40);
-        this.hasAttribute("end-scroll")   ? this.setAttribute("end-scroll",   this.getAttribute("end-scroll"))   : this.setAttribute("end-scroll", 150);
+        this.parentElement.onModelLoad = () => {
 
-        addEventListener("camRailChangePosition", (event) => {
+            this.mixer = this.parentElement.classModel.mixer;
+            this.gltf  = this.parentElement.classModel.gltf;
+    
+            this.hasAttribute("anim-name") ? this.setAttribute("anim-name", this.getAttribute("anim-name")) : this.setAttribute("anim-name", "");
+    
+            let clip = THREE.AnimationClip.findByName( this.gltf.animations, this.getAttribute("anim-name") );
+            this.anim = this.mixer.clipAction(clip);
 
-            const scrollY = event.detail.camPosIndex;
+            this.anim.play();
+            this.SetAnimTime(this.getAttribute("start-time"));
+            this.anim.paused = true;
 
-            this.SetAnimTime(this.clamp(this.map_range(scrollY, this.getAttribute("end-scroll"), this.getAttribute("start-scroll"), 1, 0), 0, 1));
-        })
+            this.hasAttribute("start-scroll") ? this.setAttribute("start-scroll", this.getAttribute("start-scroll")) : this.setAttribute("start-scroll", 40);
+            this.hasAttribute("end-scroll")   ? this.setAttribute("end-scroll",   this.getAttribute("end-scroll"))   : this.setAttribute("end-scroll", 150);
+    
+            addEventListener("camRailChangePosition", (event) => {
+    
+                const scrollY = event.detail.camPosIndex;
+    
+                this.SetAnimTime(this.clamp(this.map_range(scrollY, this.getAttribute("end-scroll"), this.getAttribute("start-scroll"), 1, 0), 0, 1));
+            });
+        }
     }
 }
 
@@ -594,5 +635,5 @@ customElements.define("anim-model-scroll", ModelAnimationScroll);
 export {
      RotateAnimation, PositionAnimation, ScaleAnimation,
      RotateAnimationScroll, PositionAnimationScroll, ScaleAnimationScroll,
-     ModelAnimation
+     ModelAnimation, ModelAnimationScroll
 }

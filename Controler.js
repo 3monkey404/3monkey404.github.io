@@ -93,7 +93,6 @@ class Controler extends HTMLElement {
                 this.element = document.getElementsByName(_name);
             }
 
-            console.log(this.element)
             if (this.element[0] != undefined) {
                 if (this.element[0] != null)
                 {

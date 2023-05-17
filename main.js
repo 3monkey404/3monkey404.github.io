@@ -1,13 +1,19 @@
 import * as THREE from 'three';
 import data from './data.json' assert { type: 'json' };
 import WebGL from 'three/addons/capabilities/WebGL.js';
-import { GLTFLoader   } from 'three/addons/loaders/GLTFLoader.js';
-import { TextGeometry } from 'three/addons/geometries/TextGeometry.js';
-import { FontLoader   } from 'three/addons/loaders/FontLoader.js';
-import { OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader      } from 'three/addons/loaders/GLTFLoader.js';
+import { TextGeometry    } from 'three/addons/geometries/TextGeometry.js';
+import { FontLoader      } from 'three/addons/loaders/FontLoader.js';
+import { OrbitControls   } from 'three/addons/controls/OrbitControls.js';
+import { EffectComposer  } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass      } from 'three/addons/postprocessing/RenderPass.js';
+import { ShaderPass      } from 'three/addons/postprocessing/ShaderPass.js';
+import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 
 import * as anim from './animation.js';
 import * as control from "./Controler.js";
+
+const ENTIRE_SCENE = 0, BLOOM_SCENE = 1;
 
 class Model3D {
 
@@ -89,33 +95,36 @@ class World extends HTMLElement {
 
         this.scene = new THREE.Scene();
         this.renderer = new THREE.WebGLRenderer();
+
+        this.bloomComposer;
+        this.bloomPass;
+        this.renderScene;
+        this.finalPass;
+        this.finalComposer;
+        this.params;
+        this.bloomLayer;
+
+        this.darkMaterial;
+        this.materials;
+
         this.camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
 
         this.anchor;
         this._controler;
-
-        if ( WebGL.isWebGLAvailable() ) {
-            this.animate();
-        } else {
-            const warning = WebGL.getWebGLErrorMessage();
-            document.getElementById( 'container' ).appendChild( warning );
-        }
     }
 
     connectedCallback() {
-
 
         this.hasAttribute("render-width")  ? this.setAttribute("render-width",  this.getAttribute("render-width"))  : this.setAttribute("render-width",  window.innerWidth);
         this.hasAttribute("render-height") ? this.setAttribute("render-height", this.getAttribute("render-height")) : this.setAttribute("render-height", window.innerHeight);
         this.hasAttribute("render-attach") ? this.setAttribute("render-attach", this.getAttribute("render-attach")) : this.setAttribute("render-attach", "render-anchor")
 
-        addEventListener("scroll", (event) => {
-            this.anchor.style.paddingTop = window.scrollY.toString() + "px";
-            //this.render.style.paddingTop = window.scrollY.toString() + "px";
-        });
-
         addEventListener("resize", (event) => {
             this.renderer.setSize(
+                this.getAttribute("render-width"),
+                this.getAttribute("render-height")
+            );
+            this.finalComposer.setSize(
                 this.getAttribute("render-width"),
                 this.getAttribute("render-height")
             );
@@ -155,6 +164,14 @@ class World extends HTMLElement {
         this.camera.rotation.set(Number(this.getAttribute("cam-rot").split(' ')[0]),
                                  Number(this.getAttribute("cam-rot").split(' ')[1]),
                                  Number(this.getAttribute("cam-rot").split(' ')[2]));
+
+
+        if ( WebGL.isWebGLAvailable() ) {
+            this.animate();
+        } else {
+            const warning = WebGL.getWebGLErrorMessage();
+            document.getElementById( 'container' ).appendChild( warning );
+        }
     }
 
     static get observedAttributes() {
@@ -191,6 +208,44 @@ class World extends HTMLElement {
                                     Number(newVal.split(' ')[2]));
                 break;
         }
+    }
+
+    renderBloom( mask ) {
+
+        if ( mask === true ) {
+
+            this.scene.traverse( this.darkenNonBloomed.bind(this) );
+            this.bloomComposer.render();
+            this.scene.traverse( this.restoreMaterial.bind(this) );
+
+        } else {
+
+            this.camera.layers.set( this.BLOOM_SCENE );
+            this.bloomComposer.render();
+            this.camera.layers.set( this.ENTIRE_SCENE );
+
+        }
+
+    }
+    darkenNonBloomed( obj ) {
+
+        if ( obj.isMesh && this.bloomLayer.test( obj.layers ) === false ) {
+
+            this.materials[ obj.uuid ] = obj.material;
+            obj.material = this.darkMaterial;
+
+        }
+
+    }
+    restoreMaterial( obj ) {
+
+        if ( this.materials[ obj.uuid ] ) {
+
+            obj.material = this.materials[ obj.uuid ];
+            delete this.materials[ obj.uuid ];
+
+        }
+
     }
 
     animate() {
@@ -899,7 +954,8 @@ class CustomPage extends HTMLElement {
                 case "anim-position-scroll": object = new anim.PositionAnimationScroll(); break;
                 case "anim-scale-scroll":    object = new anim.ScaleAnimationScroll();    break;
 
-                case "anim-model": object = new anim.ModelAnimation(); break;
+                case "anim-model":        object = new anim.ModelAnimation();       break;
+                case "anim-model-scroll": object = new anim.ModelAnimationScroll(); break;
 
                 default: object = document.createElement(_name); break;
             }
@@ -960,7 +1016,8 @@ class CustomPage extends HTMLElement {
                     case "anim-position-scroll": object = new anim.PositionAnimationScroll(); break;
                     case "anim-scale-scroll":    object = new anim.ScaleAnimationScroll();    break;
 
-                    case "anim-model": object = new anim.ModelAnimation(); break;
+                    case "anim-model":        object = new anim.ModelAnimation();       break;
+                    case "anim-model-scroll": object = new anim.ModelAnimationScroll(); break;
 
                     default: object = document.createElement(_name); break;
                 }
